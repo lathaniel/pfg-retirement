@@ -15,7 +15,7 @@ import numpy as np
 class Account:
     def __init__(self, driver, username, password):
         self.driver = driver
-        wait = WebDriverWait(self.driver, 10) 
+        #wait = WebDriverWait(self.driver, 10) 
         self.driver = login(driver, [username, password]) # I guess the account needs a DD 
         self.contracts = [] # Not sure abou this yet
     
