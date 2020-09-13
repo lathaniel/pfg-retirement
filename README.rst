@@ -2,6 +2,7 @@ Principal Financial Group retirement account interaction
 ========================================================
 
 The intent of this package is to allow interaction with PFG retirement accounts through Python.
+
 TODO: Put a link to the documentation
 
 Quick Start
@@ -26,7 +27,7 @@ your account through Python:
     driver.set_window_size(1440, 900)
 
     # Log in to the account
-    session = pfg.Session(driver, 'username', 'pa$$word')
+    session = pfg.Session(driver, 'username', 'pa$$w0rd')
 
     # show available accounts
     session.accounts

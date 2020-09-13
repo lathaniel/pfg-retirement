@@ -1,5 +1,6 @@
 '''
-Module used to scrape/obtain data from Principal's consumer. It does so using a selenium web driver.
+Primary module used for this project.
+Used to scrape/obtain data from Principal's consumer. It does so using a selenium web driver.
 '''
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -16,6 +17,17 @@ import numpy as np
 
 
 class Session:
+    '''Session class represents the login session
+
+    Parameters:
+        driver (selenium.webdriver): Selenium driver instance used to interact with the webpage
+        username (str): username to login
+        password (str): password to login
+    
+    Attributes:
+        accounts (list): list of accounts available
+
+    '''
     def __init__(self, driver, username, password):
         self.driver = driver
         # I guess the account needs a DD
@@ -84,6 +96,22 @@ class Session:
         return self.__accounts
 
 class Account(Session):
+    '''Account class represents an account identified by the :class: `Session`
+        
+    Attributes:
+        name (str): Name of the account
+        type (str): Type of account, e.g. "Defined Contribution Retirement"
+        ror: Rate of Return
+        balance: Total balance of the account
+        vestedBalance: Vested portion of balance
+        gain: Amount of gain or loss on the account
+        loss: alias for *gain*
+
+    Methods:
+        summary: Adds summary info to the account as attributes
+        history: Pulls history for the account
+        investments: Pulls current investment mix
+    '''
     def __init__(self, **kwargs):
         '''kwargs:
             id_num
@@ -148,7 +176,19 @@ class Account(Session):
 
     def history(self, start=None, end=None):
         # TODO: Include param for level of detail (mend, summ, full)
-        '''when none: 'There are no transaction details available for this date range.' on page'''
+        # ? when none: 'There are no transaction details available for this date range.' on page
+        '''Retrieves history for the given dates for the account object
+
+        Args:
+            start (str): Date string formatted MM/DD/YY.
+                This is the beginning of the requested date range. Must be at most 92 days before *end*
+            end (str): Date string formatted MM/DD/YY.
+                This is the end of the requested date range. Must be at most 92 days after *start*
+        
+        Returns:
+            Pandas Dataframe
+
+        '''
         # Verify that end - start is <= 91 days
         # Veryify start and end are dates
 
@@ -188,10 +228,18 @@ class Account(Session):
         return transactions
 
     def investments(self):
-        '''Use the driver to go to the investment details page.
-            Then, return a Pandas dataframe with the relevant information from said page
+        '''Gets summary of current investments
+
+        Data returned: fund manager, fund name, number of shares, share price, percent of portfolio, and total value
+            
+        
+        Returns:
+            Pandas Dataframe
+        
         '''
-        '''when none: 'This option will become available once there is a balance in your account.' on page'''
+
+
+        # ?when none: 'This option will become available once there is a balance in your account.' on page
         self.view_investments()
 
         # Let the page load
