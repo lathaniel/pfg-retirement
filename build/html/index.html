@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pfg-retirement package documentation &#8212; pfg-retirement 0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pfg-retirement-package-documentation">
+<h1>pfg-retirement package documentation<a class="headerlink" href="#pfg-retirement-package-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-pfg.base"></span><p>Primary module used for this project.
+Used to scrape/obtain data from Principal’s consumer. It does so using a selenium web driver.</p>
+<dl class="py class">
+<dt id="pfg.base.Account">
+<em class="property">class </em><code class="sig-prename descclassname">pfg.base.</code><code class="sig-name descname">Account</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pfg.base.Account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account class represents an account identified by the :class: <cite>Session</cite></p>
+<dl class="py attribute">
+<dt id="pfg.base.Account.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#pfg.base.Account.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the account</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.type">
+<code class="sig-name descname">type</code><a class="headerlink" href="#pfg.base.Account.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of account, e.g. “Defined Contribution Retirement Plan”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.category">
+<code class="sig-name descname">category</code><a class="headerlink" href="#pfg.base.Account.category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broad category of account, e.g. “Retirement &amp; Investments”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.ror">
+<code class="sig-name descname">ror</code><a class="headerlink" href="#pfg.base.Account.ror" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rate of Return</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.balance">
+<code class="sig-name descname">balance</code><a class="headerlink" href="#pfg.base.Account.balance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total balance of the account</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.vestedBalance">
+<code class="sig-name descname">vestedBalance</code><a class="headerlink" href="#pfg.base.Account.vestedBalance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vested portion of balance</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.gain">
+<code class="sig-name descname">gain</code><a class="headerlink" href="#pfg.base.Account.gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Amount of gain or loss on the account</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.loss">
+<code class="sig-name descname">loss</code><a class="headerlink" href="#pfg.base.Account.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias for <em>gain</em></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.asof">
+<code class="sig-name descname">asof</code><a class="headerlink" href="#pfg.base.Account.asof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Date when data was updated</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.allocations">
+<code class="sig-name descname">allocations</code><a class="headerlink" href="#pfg.base.Account.allocations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Summary of paycheck contribution settings as <em>Pandas DataFrame</em></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pfg.base.Account.contributions">
+<code class="sig-name descname">contributions</code><a class="headerlink" href="#pfg.base.Account.contributions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Summary of employee vs employer contributions (along with vesting information) as <em>Pandas DataFrame</em></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pfg.base.Account.history">
+<code class="sig-name descname">history</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">detail</span><span class="o">=</span><span class="default_value">'summary'</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pfg.base.Account.history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves history for the given dates for the account object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detail</strong> (<em>str</em>) – Level of detail to provide. Goal is to provide three levels of detail</p></li>
+<li><p><strong>start</strong> (<em>str</em>) – Date string formatted MM/DD/YY.
+This is the beginning of the requested date range. Must be at most 92 days before <em>end</em></p></li>
+<li><p><strong>end</strong> (<em>str</em>) – Date string formatted MM/DD/YY.
+This is the end of the requested date range. Must be at most 92 days after <em>start</em></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pandas Dataframe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pfg.base.Account.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pfg.base.Account.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>use nav_url to get some info on the account (e.g. balance, vested balance, etc.)
+Matta fact, maybe this should be done on __init__, since doing so could also yield hrefs to history, etc.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pfg.base.Session">
+<em class="property">class </em><code class="sig-prename descclassname">pfg.base.</code><code class="sig-name descname">Session</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">driver</span></em>, <em class="sig-param"><span class="n">username</span></em>, <em class="sig-param"><span class="n">password</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pfg.base.Session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Session class represents the login session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>driver</strong> (<em>selenium.webdriver</em>) – Selenium driver instance used to interact with the webpage</p></li>
+<li><p><strong>username</strong> (<em>str</em>) – username to login</p></li>
+<li><p><strong>password</strong> (<em>str</em>) – password to login</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="pfg.base.Session.accounts">
+<code class="sig-name descname">accounts</code><a class="headerlink" href="#pfg.base.Session.accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of accounts available</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of <em>str</em> objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<p>I prefer to use a headless chrome driver as my driver:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">chrome_options</span> <span class="o">=</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">chrome</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">Options</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chrome_options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--headless&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chrome_options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--log-level=3&quot;</span><span class="p">)</span>  <span class="c1"># only show fatal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span> <span class="o">=</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">Chrome</span><span class="p">(</span><span class="n">executable_path</span><span class="o">=</span><span class="s1">&#39;chromedriver&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">chrome_options</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driver</span><span class="o">.</span><span class="n">set_window_size</span><span class="p">(</span><span class="mi">1440</span><span class="p">,</span> <span class="mi">900</span><span class="p">)</span> <span class="c1"># Setting window size ensures elements are clickable</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="s1">&#39;pa$$w0rd&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="pfg.base.Session.get_account">
+<code class="sig-name descname">get_account</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pfg.base.Session.get_account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the specified account from self.accounts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – string matching one of the strings shown in <em>accounts</em> list</p></li>
+<li><p><strong>index</strong> (<em>int</em>) – integer for which index from <em>accounts</em> list to show</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">session</span> <span class="o">=</span> <span class="n">pfg</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">usr</span><span class="p">,</span> <span class="n">pwd</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">session</span><span class="o">.</span><span class="n">accounts</span>
+<span class="go">[&#39;Company X 401k&#39;, &#39;Former Company Y 401k&#39;, &#39;Company X Pension&#39;, &#39;Company X Dental&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get_account</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Company X 401k&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get_account</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">==</span> <span class="n">y</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Or maybe:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">get_account</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">accounts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="go">&#39;Company X 401k&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">pfg-retirement</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, ASL.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
