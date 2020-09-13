@@ -36,6 +36,7 @@ TODO
 Requirements
 ------------
 **TODO: Include versions below**
+
 * `selenium webdriver <https://selenium-python.readthedocs.io/>`_
 * `Python <https://www.python.org>`_
 * `Pandas <https://github.com/pydata/pandas>`_
