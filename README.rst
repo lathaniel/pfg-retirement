@@ -2,6 +2,7 @@ Principal Financial Group retirement account interaction
 ========================================================
 
 The intent of this package is to allow interaction with PFG retirement accounts through Python.
+TODO: Put a link to the documentation
 
 Quick Start
 ===========
@@ -19,7 +20,8 @@ your account through Python:
 
     # As of now, this can only be done with a selennium driver
     chrome_options = webdriver.chrome.options.Options()
-    chrome_options.add_argument('--headless') #make it headless later
+    chrome_options.add_argument('--headless')
+    options.add_argument("--log-level=3")  # only show fatal
     driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
     driver.set_window_size(1440, 900)
 
