@@ -18,16 +18,32 @@ your account through Python:
     from selenium import webdriver
 
     # As of now, this can only be done with a selennium driver
-    chrome_options = Options()
+    chrome_options = webdriver.chrome.options.Options()
     chrome_options.add_argument('--headless') #make it headless later
-    driver = webdriver.Chrome(executable_path='../chromedriver', options=chrome_options)
+    driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
     driver.set_window_size(1440, 900)
 
     # Log in to the account
-    acct = pfg.Account(driver, 'username', 'pa$$word')
+    session = pfg.Session(driver, 'username', 'pa$$word')
 
     # show available accounts
-    acct.contracts
+    session.accounts
+
+    # play around with one of the accounts
+    acct = session.accounts(index=1) # choosing the account at index 1 of the session accounts
+    acct.summary()
+
+    # Account info
+    acct.name
+    acct.type    
+    
+    # Balance
+    acct.balance
+    acct.vestedBalance
+
+    # metrics
+    acct.gain # Gain/Loss
+    acct.ror # Rate of Return    
 
 Installation
 ------------

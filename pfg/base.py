@@ -1,5 +1,5 @@
 '''
-Module used to scrape/obtain data from Principal's Retirement account. It does so using a selenium web driver.
+Module used to scrape/obtain data from Principal's consumer. It does so using a selenium web driver.
 '''
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,50 +15,75 @@ import pandas as pd
 import numpy as np
 
 
-class Account:
+class Session:
     def __init__(self, driver, username, password):
         self.driver = driver
-        #wait = WebDriverWait(self.driver, 10)
         # I guess the account needs a DD
         self.driver = login(driver, [username, password])
-        self.contracts = []  # Not sure abou this yet
+        self.__accounts = []
 
-        '''from the landing page, get the contract numbers and the id number
+        '''from the landing page, get the contract number(s) and the id number
             We need to wait for the page to load to do this'''
-        time.sleep(7)
+        time.sleep(7) # Maybe while 'Hang on' in page text
         # Get all the hrefs from the landing page
         a_tags = driver.find_elements_by_tag_name('a')
 
-        # Filter to ones containing 'contract_num' in the href
-        a_tags = list(filter(lambda x: False if not x.get_attribute(
-            'href') else 'contract_num' in x.get_attribute('href'), a_tags))
-        # TODO: Filter to only unique hrefs so we only get relevant elements
-        for tag in a_tags:
+        # Filter to links containing 'contract' in the href
+        a_tags = list(filter(lambda x: False if not x.get_attribute('href') else 'contract' in x.get_attribute('href').lower(), a_tags))
+        hrefs = [x.get_attribute('href') for x in a_tags] # Do this to avoid stale element issue
+        onclicks = [x.get_attribute('onclick') for x in a_tags] # Do this to avoid stale element issue
+
+        for i, href in enumerate(hrefs):
             d = dict()
-            href = tag.get_attribute('href')
             d['nav_url'] = href
             # Get query params from the href
-            attrs = re.findall('[\\&\\?]([^\\&=\\?]+)=([^\\&\\?]+)', href)
+            attrs = re.findall('[\\&\\?]([^\\&=\\?]+)=([^\\&\\?]+)', href) if href else None
 
-            if len(attrs):
+            if attrs:
                 for param, val in attrs:
                     d.setdefault(param, []).append(val)
 
-            # Get the Name of the contract
-            onclick = tag.get_attribute('onclick')
-            if onclick:
+            # Get the Name of the account
+            if onclicks[i]:
                 # Arglist should be of form (plan_cat, plan_type, plan_name)
                 argnames = ['category', 'type', 'name']
-                onclick = onclick.split(
-                    'gtmAccountDetails')[-1].strip('()').split(',')
+                onclick = onclicks[i].split('gtmAccountDetails')[-1].strip('()').split(',')
                 # This should always be case...or at least it will once I set this up correctly
                 if len(onclick) == 3:
                     # strip away the double quotes
                     argvals = list(map(lambda x: x.strip('"'), onclick))
                     d.update(dict(zip(argnames, argvals)))
-                    self.contracts.append(Contract(driver=self.driver, **d))
+                    self.add_account(Account(driver=self.driver, **d))
 
-class Contract(Account):
+    @property
+    def accounts(self):
+        return [x.name for x in self.__accounts] if self.__accounts else None
+    
+    @accounts.setter
+    def accounts(self, value):
+        self.__accounts = value
+    
+    def get_account(self, name=None, index=None):
+        if name:
+            if isinstance(name, str):
+                '''Case 1: a string was proided. This should represent one of the account names'''
+                return list(filter(lambda x: name in x.name, self.__accounts))[0]
+            else:
+                print('name should be a string.')
+                return None
+        elif index:
+            if isinstance(index, int):
+                '''Case 2: an integer was provided. This should represent an index'''
+                return self.__accounts[index]
+            else:
+                print('index should be an integer representing an index')
+                return None
+    
+    def add_account(self, obj_account):
+        self.__accounts = self.__accounts + [obj_account]
+        return self.__accounts
+
+class Account(Session):
     def __init__(self, **kwargs):
         '''kwargs:
             id_num
@@ -67,13 +92,12 @@ class Contract(Account):
             name
             nav_url
             driver ... I think the account should really have the driver, but I cannot seem to wrap my head around that yet.
-                    Furthermore, I think each contract having its own driver will cause HTMLAsynch issues.
+                    Furthermore, I think each account having its own driver will cause HTMLAsynch issues.
         '''
-        self.__dict__.update(
-            kwargs)  # Update the attributes with provided params
+        self.__dict__.update(kwargs)  # Update the attributes with provided params
         # just for shits, lets see what happens if we run summary() on init
-        # ! Update: its a no-go
-        # self.summary()
+        # ? Update: It takes about two minutes, which is kind of extra, so lets leave it out for now
+        #self.summary()
 
     def summary(self):
         '''
@@ -82,46 +106,45 @@ class Contract(Account):
         '''
         self.driver.implicitly_wait(10)
         self.driver.get(self.nav_url)
+        if 'defined contribution' in self.type.lower():
 
-        # Find the nav bar (give the page time to load)
-        time.sleep(5)
-        self.driver.implicitly_wait(0)
-        navs = self.driver.find_elements_by_tag_name('nav')
-        # Assumption is that nav bar is second (first would be tope with logout etc)
-        nav_bar = nav_bar = navs[1].find_element_by_tag_name(
-            'ul') if len(navs) else None
+            # Find the nav bar (give the page time to load)
+            time.sleep(5)
+            self.driver.implicitly_wait(0)
+            navs = self.driver.find_elements_by_tag_name('nav')
+            # Assumption is that nav bar is second (first would be top with logout etc)
+            nav_bar = nav_bar = navs[1].find_element_by_tag_name('ul') if len(navs) else None
 
-        # Use the dropdowns to get the hrefs
-        d = dict()
-        if nav_bar:
-            # Get the dropdowns
-            # for dd in nav_bar.find_elements_by_tag_name('ul'):
+            # Use the dropdowns to get the hrefs
+            d = dict()
+            if nav_bar:
+                # Get the dropdowns
+                # for dd in nav_bar.find_elements_by_tag_name('ul'):
 
-            for opt in nav_bar.find_elements_by_tag_name('li'):
-                if opt.text == '':
-                    continue
-                # If the opt is a dropdown
-                if opt.find_elements_by_tag_name('ul'):
-                    opt.click()
-                    sub = opt.find_elements_by_tag_name('li')
-                    for x in sub:
-                        d[x.text] = x.find_element_by_tag_name(
-                            'a').get_attribute('href')
-                    opt.click()
-                else:
-                    d[opt.text] = opt.find_element_by_tag_name(
-                        'a').get_attribute('href')  # Should only be one
+                for opt in nav_bar.find_elements_by_tag_name('li'):
+                    if opt.text == '':
+                        continue
+                    # If the opt is a dropdown
+                    if opt.find_elements_by_tag_name('ul'):
+                        opt.click()
+                        sub = opt.find_elements_by_tag_name('li')
+                        for x in sub:
+                            d[x.text] = x.find_element_by_tag_name('a').get_attribute('href')
+                        opt.click()
+                    else:
+                        d[opt.text] = opt.find_element_by_tag_name('a').get_attribute('href')  # Should only be one
 
-        self.nav_links = d
+            self.nav_links = d
 
-        ########
-        # Get account summary info
-        m = re.search(
-            'controllerData = (\\{.*\\})\;?', self.driver.page_source)
-        if m:
-            d = json.loads(m[1])
-            # For now just add everything, I guess
-            self.__dict__.update(d)
+            ########
+            # Get account summary info, if available
+            m = re.search(
+                'controllerData = (\\{.*\\})\;?', self.driver.page_source)
+            if m:
+                d = json.loads(m[1])
+                # For now just add everything, I guess
+                self.__dict__.update(d)
+        self.driver.get('https://secure05.principal.com/member/accounts') # TODO: make this an attr like Account._home
 
     def history(self, start=None, end=None):
         # TODO: Include param for level of detail (mend, summ, full)
@@ -196,7 +219,7 @@ class Contract(Account):
         # return tbl
 
     def view_investments(self):
-        # This should probably be a method of Account, but inherited to Contract?
+        # This should probably be a method of Account, but inherited to Account?
         self.driver.get(self.nav_links['Investment Details'])
 
     def view_transactions(self):
@@ -258,12 +281,14 @@ class Contract(Account):
 
 
 def requested_2FA(driver):
+    driver.implicitly_wait(10)  # seconds
     if not driver.find_element_by_id('otpXS'):
         return False
     return True
 
 
 def verify_2FA(driver):
+    driver.implicitly_wait(10)  # seconds
     # Each field is its own box
     otp = input('What is the code that was texted to you? ')
     otp_xs = driver.find_element_by_id('otpXS')
