@@ -1,4 +1,4 @@
-Prinicpal Financial Group retirement account interaction
+Principal Financial Group retirement account interaction
 ========================================================
 
 The intent of this package is to allow interaction with PFG retirement accounts through Python.
@@ -35,4 +35,8 @@ TODO
 
 Requirements
 ------------
-TODO
+**TODO: Include versions below**
+* `selenium webdriver <https://selenium-python.readthedocs.io/>`_
+* `Python <https://www.python.org>`_
+* `Pandas <https://github.com/pydata/pandas>`_
+* `Numpy <http://www.numpy.org>`_
