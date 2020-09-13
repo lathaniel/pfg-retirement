@@ -25,7 +25,18 @@ class Session:
         password (str): password to login
     
     Attributes:
-        accounts (list): list of accounts available
+        accounts (list of *str* objects): list of accounts available
+
+    Example:
+        I prefer to use a headless chrome driver as my driver:
+        
+        >>> chrome_options = webdriver.chrome.options.Options()
+        >>> chrome_options.add_argument('--headless')
+        >>> chrome_options.add_argument("--log-level=3")  # only show fatal
+        >>> driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
+        >>> driver.set_window_size(1440, 900) # Setting window size ensures elements are clickable
+        
+        >>> session = Session(driver, 'username', 'pa$$w0rd')
 
     '''
     def __init__(self, driver, username, password):
@@ -76,6 +87,27 @@ class Session:
         self.__accounts = value
     
     def get_account(self, name=None, index=None):
+        '''Retrieves the specified account from self.accounts
+        
+        Args:
+            name (str): string matching one of the strings shown in *accounts* list
+            index (int): integer for which index from *accounts* list to show
+        
+        Examples:
+            >>> session = pfg.Session(driver, usr, pwd)
+            >>> session.accounts
+            ['Company X 401k', 'Former Company Y 401k', 'Company X Pension', 'Company X Dental']
+            >>> x = session.get_account(name='Company X 401k')
+            >>> y = session.get_account(index = 0)
+            >>> x == y
+            True
+
+            Or maybe:
+
+            >>> print(session.get_account(session.accounts[0]).name)
+            'Company X 401k'
+              
+        '''
         if name:
             if isinstance(name, str):
                 '''Case 1: a string was proided. This should represent one of the account names'''
@@ -100,17 +132,17 @@ class Account(Session):
         
     Attributes:
         name (str): Name of the account
-        type (str): Type of account, e.g. "Defined Contribution Retirement"
+        type (str): Type of account, e.g. "Defined Contribution Retirement Plan"
+        category (str): Broad category of account, e.g. "Retirement & Investments"
         ror: Rate of Return
         balance: Total balance of the account
         vestedBalance: Vested portion of balance
         gain: Amount of gain or loss on the account
         loss: alias for *gain*
+        asof: Date when data was updated
+        allocations: Summary of paycheck contribution settings as *Pandas DataFrame*
+        contributions: Summary of employee vs employer contributions (along with vesting information) as *Pandas DataFrame*
 
-    Methods:
-        summary: Adds summary info to the account as attributes
-        history: Pulls history for the account
-        investments: Pulls current investment mix
     '''
     def __init__(self, **kwargs):
         '''kwargs:
@@ -174,12 +206,13 @@ class Account(Session):
                 self.__dict__.update(d)
         self.driver.get('https://secure05.principal.com/member/accounts') # TODO: make this an attr like Account._home
 
-    def history(self, start=None, end=None):
-        # TODO: Include param for level of detail (mend, summ, full)
+    def history(self, detail='summary', start=None, end=None):
+        # TODO: Include param for level of detail (summary, _, full)
         # ? when none: 'There are no transaction details available for this date range.' on page
         '''Retrieves history for the given dates for the account object
 
         Args:
+            detail (str): Level of detail to provide. Goal is to provide three levels of detail
             start (str): Date string formatted MM/DD/YY.
                 This is the beginning of the requested date range. Must be at most 92 days before *end*
             end (str): Date string formatted MM/DD/YY.
@@ -189,45 +222,41 @@ class Account(Session):
             Pandas Dataframe
 
         '''
-        # Verify that end - start is <= 91 days
-        # Veryify start and end are dates
+        
+        if detail.lower()=='summary':
+            # Get the balanceHistory data
+            transactions = pd.DataFrame(np.array([[x['effectiveDate'][0:10], x['total']] for x in self.balanceHistory]), columns = ['Date', 'Total'])
 
-        # By default, get the most amount of detail possible
-        self.request_history()
+        elif detail.lower()=='full':
+            #Get the most amount of detail possible
 
-        # At this point, we've made it to the transactions - and it should be loaded already
-        headers = None
-        self.driver.implicitly_wait(0)  # seconds
-        # This element is a table of transactions for a fund
-        for tbl in self.driver.find_elements_by_id('ResultTable'):
-            for t in tbl.find_elements_by_tag_name('tbody'):
-                for r in t.find_elements_by_tag_name('tr'):
-                    # One of these has the investment name and the table headers
-                    if r.find_elements_by_tag_name('th'):
-                        if not 'activity amount' in r.text.lower():
-                            # Get the name of the investment
-                            investment = r.text
-                        elif not headers:  # The assumption here is that all tables will have the same layout and can be combined
-                            # Get the column names
-                            headers = [
-                                h.text for h in r.find_elements_by_tag_name('th')]
+            # TODO: input validation:
+            # Verify that end - start is <= 91 days
+            # Veryify start and end are dates
 
-                            # Create an empty dataframe with column names (add one for fund name)
-                            transactions = pd.DataFrame(
-                                columns=list(headers + ['Investment']))
-
-                    # The other has the investment details
-                    else:
-                        data = [d.text for d in r.find_elements_by_tag_name(
-                            'td')] + [investment]
-                        if data[2] == 'Total':
-                            continue  # We don't need the total row
-                        row = dict(zip(transactions.columns, data))
-                        transactions = transactions.append(
-                            row, ignore_index=True)
+            #? 'https://secure05.principal.com/RetirementServiceCenter/memberview?Contract=%283%2966776&Allow365=&From=06%2F13%2F2020&From2=09%2F01%2F2020&To=09%2F13%2F2020&To2=09%2F13%2F2020&Inv=By&Cont=By&page_name=reqbyby'
+            # TODO: Build request URL using above as a template in following call
+            self._request_history()
+            # Let the page load
+            time.sleep(4)
+            
+            # At this point, we've made it to the transactions - and it should be loaded already            
+            tables = pd.read_html(self.driver.page_source)[1:-1]
+            for i, t in enumerate(tables):
+                # Each table is a multiindex along column axis
+                inv = t.columns[0][0]
+                t = t.droplevel(0,'columns')
+                t['Investment'] = inv
+                
+                # Drop total row
+                t = t.loc[~(t['Contribution Type']=='Total')]
+                if not i:
+                    transactions = pd.DataFrame(columns=t.columns)
+                transactions = transactions.append(t, ignore_index=True)
+                
         return transactions
 
-    def investments(self):
+    def _get_investments(self):
         '''Gets summary of current investments
 
         Data returned: fund manager, fund name, number of shares, share price, percent of portfolio, and total value
@@ -237,46 +266,57 @@ class Account(Session):
             Pandas Dataframe
         
         '''
-
-
         # ?when none: 'This option will become available once there is a balance in your account.' on page
-        self.view_investments()
+        self._view_investments()
 
         # Let the page load
         time.sleep(5)
         tbl = pd.read_html(self.driver.page_source)[0]
 
-        tbl.columns = ['AssetClass', 'Manager-Asset',
-                       'Mix', 'Units', 'UnitValue', 'Total']
-        tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(
-            x.replace('Performance Snapshot', '').split('Principal')[1:]))
+        tbl.columns = ['AssetClass', 'Manager-Asset','Mix', 'Units', 'UnitValue', 'Total']
+        tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(x.replace('Performance Snapshot', '').split('Principal')[1:]))
         # Add the fund manager
-        tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(
-            x.replace('Performance Snapshot', '').split('Principal')[0]))
+        tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(x.replace('Performance Snapshot', '').split('Principal')[0]))
 
         return tbl[['AssetClass', 'Manager', 'AssetName', 'Mix', 'Units', 'UnitValue', 'Total']]
 
-        # Remove rows and columns that wont be used
-        # Do all the following later (i.e. user-side)
-        #tbl = tbl[['AssetName','Date','Close']].dropna()
-        # Add date column
-        #tbl['Date'] = pd.datetime.today().strftime('%Y-%m-%d')
-        # Remove any funds that actually have tickers
-        # tbl = tbl.loc[~(tbl.AssetName.str.contains(' CIT'))] # Think this logic is sound
-
-        # return tbl
-
-    def view_investments(self):
-        # This should probably be a method of Account, but inherited to Account?
+    def _view_investments(self):
         self.driver.get(self.nav_links['Investment Details'])
 
-    def view_transactions(self):
+    def _view_transactions(self):
         self.driver.get(self.nav_links['Account History'])
 
-    def request_history(self, detail='full', start=None, end=None):
+    def _get_allocations(self):
+        '''Get the current paycheck contribution percentages
+        
+        Returns:
+            Pandas DataFrame
+        
+        TODO:
+            Be able to strip assetName and managerName from provided data
+        '''
+        self.driver.get(self.nav_links['Paycheck Contribution Details'])
+        time.sleep(4) # let the page load
+
+        tbl = pd.read_html(self.driver.page_source)[0].droplevel(0, axis=1)
+        tbl.columns = ['AssetClass','Manager-Asset', 'empty', 'Allocation']
+        
+        # Remove unnecessary columns and rows
+        tbl = tbl.drop(columns=['empty'])
+        tbl = tbl.drop(len(tbl) - 1) # Last row is a total row
+        tbl['Allocation'] = tbl.Allocation.apply(lambda x: float(re.search('(\d+\.\d{2})%',x)[1])/100)
+        
+        # Get the asset and manager names from provided column
+        tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(x.replace('Performance Snapshot', '').split('Principal')[1:]))
+        # Add the fund manager
+        tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(x.replace('Performance Snapshot', '').split('Principal')[0]))
+
+        return tbl[['Manager-Asset', 'AssetClass', 'Allocation']]
+
+    def _request_history(self, detail='full', start=None, end=None):
         self.driver.implicitly_wait(10)
         # Go to the transactions page
-        self.view_transactions()
+        self._view_transactions()
         if detail == 'full':
             # View in full detail
             self.driver.find_element_by_id('submit-view-more-history').click()
@@ -307,6 +347,37 @@ class Account(Session):
         btn = self.driver.find_element_by_name('Submit')
         btn.click()
 
+    def _get_contributions(self):
+        self.driver.get(self.nav_links['Contribution Totals By Source'])
+        # Let the page load
+        time.sleep(4)
+        
+        # This is the most generalized table, so we'll take that. May want to provide flexibility later on, though.
+        tbl = pd.read_html(driver.page_source)[1].dropna()
+        tbl.columns = ['src','vested_pct','vested_usd','total_usd','total_pct']
+
+        tbl['Source'] = tbl['src'].apply(lambda x: re.search('(.+)Summary', x)[1])
+
+        # Change to actual numbers
+        tbl.vested_pct = tbl.vested_pct.str.strip('%').astype(float)
+        tbl.total_pct = tbl.total_pct.str.strip('%').astype(float)
+        tbl.vested_usd = tbl.vested_usd.str.replace('$', '').str.replace(',','').astype(float)
+        tbl.total_usd = tbl.total_usd.str.replace('$', '').str.replace(',','').astype(float)
+
+        return tbl[['Source','vested_pct','vested_usd','total_usd','total_pct']]
+
+    @property
+    def allocations(self):
+        return self._get_allocations()
+    
+    @property
+    def conntributions(self):
+        return self._get_contributions()
+    
+    @property
+    def investments(self):
+        return self._get_investments()
+
     @property
     def ror(self):
         return self.accountBalance['rateOfReturn']
@@ -326,6 +397,10 @@ class Account(Session):
     @property
     def loss(self):
         return self.gain
+    
+    @property
+    def asof(self):
+        return self.accountBalance['asOfDate'][:10]
 
 
 def requested_2FA(driver):
