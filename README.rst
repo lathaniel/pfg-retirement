@@ -47,7 +47,7 @@ your account through Python:
     # metrics
     acct.gain # Gain/Loss
     acct.ror # Rate of Return   
-    name (str): Name of the account
+    acct.name # Name of the account
     acct.type # Type of account, e.g. "Defined Contribution Retirement Plan"
     acct.category # Broad category of account, e.g. "Retirement & Investments"
     acct.ror # Rate of Return
