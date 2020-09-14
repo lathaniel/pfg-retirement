@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(1, os.path.abspath('../env/Lib/site-packages')) # path to venv
 
 # -- Project information -----------------------------------------------------
-
+master_doc = 'index'
 project = 'pfg-retirement'
 copyright = '2020, ASL'
 author = 'ASL'
