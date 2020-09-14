@@ -46,7 +46,18 @@ your account through Python:
 
     # metrics
     acct.gain # Gain/Loss
-    acct.ror # Rate of Return    
+    acct.ror # Rate of Return   
+    name (str): Name of the account
+    acct.type # Type of account, e.g. "Defined Contribution Retirement Plan"
+    acct.category # Broad category of account, e.g. "Retirement & Investments"
+    acct.ror # Rate of Return
+    acct.balance # Total balance of the account
+    acct.vestedBalance # Vested portion of balance
+    acct.gain # Amount of gain or loss on the account
+    acct.loss # alias for *gain*
+    acct.asof # Date when data was updated
+    acct.allocations # Summary of paycheck contribution settings as *Pandas DataFrame*
+    acct.contributions # Summary of employee vs employer contributions (along with vesting information) as *Pandas DataFrame* 
 
 Installation
 ------------

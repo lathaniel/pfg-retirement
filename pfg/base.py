@@ -128,7 +128,7 @@ class Session:
         return self.__accounts
 
 class Account(Session):
-    '''Account class represents an account identified by the :class: `Session`
+    ''':class: Account represents an account identified by the :class: `Session`
         
     Attributes:
         name (str): Name of the account
