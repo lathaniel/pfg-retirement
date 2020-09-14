@@ -1,7 +1,7 @@
 Principal Financial Group retirement account interaction
 ========================================================
 
-The intent of this package is to allow interaction with PFG retirement accounts through Python.
+The intent of this package is to allow interaction with PFG retirement accounts through Python. This is in no way affiliated with Principal Financial Group or any of its affiliates. Use of this package is done so at your own risk.
 
 TODO: Put a link to the documentation
 
