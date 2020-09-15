@@ -5,8 +5,8 @@ pfg-retirement package documentation
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: pfg.base
-   :members:
+   overview
+   reference
 
 Indices and tables
 ==================

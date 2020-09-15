@@ -115,7 +115,7 @@ class Session:
             else:
                 print('name should be a string.')
                 return None
-        elif index:
+        elif index is not None:
             if isinstance(index, int):
                 '''Case 2: an integer was provided. This should represent an index'''
                 return self.__accounts[index]
@@ -142,7 +142,6 @@ class Account(Session):
         asof: Date when data was updated
         allocations: Summary of paycheck contribution settings as *Pandas DataFrame*
         contributions: Summary of employee vs employer contributions (along with vesting information) as *Pandas DataFrame*
-
     '''
     def __init__(self, **kwargs):
         '''kwargs:
