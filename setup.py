@@ -4,7 +4,7 @@ setup(
     name="pfg-retirement",
     version="0.1",
     packages=find_packages(),
-    scripts=["base.py"],
+    scripts=["pfg"],
 
 
     # Project uses reStructuredText, so ensure that the docutils get
