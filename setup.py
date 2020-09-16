@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pfg-retirement",
-    version="0.1",
+    version="0.2.1",
     packages=['pfg'],
 
     # Project uses reStructuredText, so ensure that the docutils get
@@ -22,3 +22,5 @@ setup(
     description="First pass of PFG api",
     url = "https://github.com/lathaniel/pfg-retirement"
 )
+
+# Dv05^^flNnz22**@N#MC$C&hFpx45iDh!rOkRN4
