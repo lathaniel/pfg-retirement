@@ -42,7 +42,7 @@ class Session:
     def __init__(self, driver, username, password):
         self.driver = driver
         # I guess the account needs a DD
-        self.driver = login(driver, [username, password])
+        self.__login([username, password])
         self.__accounts = []
 
         '''from the landing page, get the contract number(s) and the id number
@@ -77,6 +77,78 @@ class Session:
                     argvals = list(map(lambda x: x.strip('"'), onclick))
                     d.update(dict(zip(argnames, argvals)))
                     self.add_account(Account(driver=self.driver, **d))
+    
+    def __verify_2FA(self):
+        self.driver.implicitly_wait(10)  # seconds
+        # Each field is its own box
+        otp = input('What is the code that was texted to you? ')
+        otp_xs = self.driver.find_element_by_id('otpXS')
+        if not otp_xs.is_displayed():
+            # Enter the passcode one char at a time
+            for x in self.driver.find_elements_by_tag_name('input'):
+                if x.get_attribute('id') == 'otp1':
+                    x.clear()
+                    x.send_keys(otp[0])
+                elif x.get_attribute('id') == 'otp2':
+                    x.clear()
+                    x.send_keys(otp[1])
+                elif x.get_attribute('id') == 'otp3':
+                    x.clear()
+                    x.send_keys(otp[2])
+                elif x.get_attribute('id') == 'otp4':
+                    x.clear()
+                    x.send_keys(otp[3])
+                elif x.get_attribute('id') == 'otp5':
+                    x.clear()
+                    x.send_keys(otp[4])
+                elif x.get_attribute('id') == 'otp6':
+                    x.clear()
+                    x.send_keys(otp[5])
+        else:
+            # Enter the password all at once
+            otp_xs.clear()
+            otp_xs.send_keys(otp)
+
+        # Click the verify button
+        verify = self.driver.find_element_by_id('verifyButton')
+        verify.click()
+    
+    def __requested_2FA(self):
+        self.driver.implicitly_wait(10)  # seconds
+        if not self.driver.find_element_by_id('otpXS'):
+            return False
+        return True
+
+    def __login(self, creds):
+        self.driver.implicitly_wait(10)  # seconds
+        # Go to PFG login site
+        url = 'https://login.principal.com/login'
+        self.driver.get(url)
+
+        # Login using credentials
+        usr_field = self.driver.find_element_by_id('username')
+        usr_field.clear()
+        usr_field.send_keys(creds[0])
+        pwd_field = self.driver.find_element_by_id('password')
+        pwd_field.clear()
+        pwd_field.send_keys(creds[1])
+
+        # Accept the cookies, if applicable
+        try:
+            login = self.driver.find_element_by_id('continue')
+            self.driver.find_element_by_id('onetrust-accept-btn-handler').click()
+        except:
+            pass
+        login.click()
+
+        # Make sure it worked
+        if 'username or password you entered was invalid' in self.driver.page_source:
+            print('Unable to login.')
+            return None
+
+        # Perform 2FA, if applicable
+        if self.__requested_2FA():
+            self.__verify_2FA()
 
     @property
     def accounts(self):
@@ -400,82 +472,3 @@ class Account(Session):
     @property
     def asof(self):
         return self.accountBalance['asOfDate'][:10]
-
-
-def requested_2FA(driver):
-    driver.implicitly_wait(10)  # seconds
-    if not driver.find_element_by_id('otpXS'):
-        return False
-    return True
-
-
-def verify_2FA(driver):
-    driver.implicitly_wait(10)  # seconds
-    # Each field is its own box
-    otp = input('What is the code that was texted to you? ')
-    otp_xs = driver.find_element_by_id('otpXS')
-    if not otp_xs.is_displayed():
-        # Enter the passcode one char at a time
-        for x in driver.find_elements_by_tag_name('input'):
-            if x.get_attribute('id') == 'otp1':
-                x.clear()
-                x.send_keys(otp[0])
-            elif x.get_attribute('id') == 'otp2':
-                x.clear()
-                x.send_keys(otp[1])
-            elif x.get_attribute('id') == 'otp3':
-                x.clear()
-                x.send_keys(otp[2])
-            elif x.get_attribute('id') == 'otp4':
-                x.clear()
-                x.send_keys(otp[3])
-            elif x.get_attribute('id') == 'otp5':
-                x.clear()
-                x.send_keys(otp[4])
-            elif x.get_attribute('id') == 'otp6':
-                x.clear()
-                x.send_keys(otp[5])
-    else:
-        # Enter the password all at once
-        otp_xs.clear()
-        otp_xs.send_keys(otp)
-
-    # Click the verify button
-    verify = driver.find_element_by_id('verifyButton')
-    verify.click()
-
-    return driver
-
-
-def login(driver, creds):
-    driver.implicitly_wait(10)  # seconds
-    # Go to PFG login site
-    url = 'https://login.principal.com/login'
-    driver.get(url)
-
-    # Login using credentials
-    usr_field = driver.find_element_by_id('username')
-    usr_field.clear()
-    usr_field.send_keys(creds[0])
-    pwd_field = driver.find_element_by_id('password')
-    pwd_field.clear()
-    pwd_field.send_keys(creds[1])
-
-    # Accept the cookies, if applicable
-    try:
-        login = driver.find_element_by_id('continue')
-        driver.find_element_by_id('onetrust-accept-btn-handler').click()
-    except:
-        pass
-    login.click()
-
-    # Make sure it worked
-    if 'username or password you entered was invalid' in driver.page_source:
-        print('Unable to login.')
-        return None
-
-    # Perform 2FA, if applicable
-    if requested_2FA(driver):
-        driver = verify_2FA(driver)
-
-    return driver
