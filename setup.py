@@ -20,7 +20,5 @@ setup(
     author="Lathaniel",
     author_email='',
     description="First pass of PFG api",
-    project_urls={        
-        "Source Code": "https://github.com/lathaniel/pfg-retirement/",
-    }
+    url = "https://github.com/lathaniel/pfg-retirement"
 )
