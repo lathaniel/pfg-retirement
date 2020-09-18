@@ -30,13 +30,17 @@ class Session:
     Example:
         I prefer to use a headless chrome driver as my driver:
         
-        >>> chrome_options = webdriver.chrome.options.Options()
-        >>> chrome_options.add_argument('--headless')
-        >>> chrome_options.add_argument("--log-level=3")  # only show fatal
-        >>> driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
-        >>> driver.set_window_size(1440, 900) # Setting window size ensures elements are clickable
+        .. code-block::
         
-        >>> session = Session(driver, 'username', 'pa$$w0rd')
+            chrome_options = webdriver.chrome.options.Options()
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument("--log-level=3")  # only show fatal
+            driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
+            driver.set_window_size(1440, 900) # Setting window size ensures elements are clickable
+        
+        .. code-block::
+
+            session = Session(driver, 'username', 'pa$$w0rd')
 
     '''
     def __init__(self, driver, username, password):
@@ -166,18 +170,22 @@ class Session:
             index (int): integer for which index from *accounts* list to show
         
         Examples:
-            >>> session = pfg.Session(driver, usr, pwd)
-            >>> session.accounts
-            ['Company X 401k', 'Former Company Y 401k', 'Company X Pension', 'Company X Dental']
-            >>> x = session.get_account(name='Company X 401k')
-            >>> y = session.get_account(index = 0)
-            >>> x == y
-            True
+            .. code-block::
+
+                session = pfg.Session(driver, usr, pwd)
+                session.accounts
+                # ['Company X 401k', 'Former Company Y 401k', 'Company X Pension', 'Company X Dental']
+                x = session.get_account(name='Company X 401k')
+                y = session.get_account(index = 0)
+                x == y
+                #True
 
             Or maybe:
+            
+            .. code-block::
 
-            >>> print(session.get_account(session.accounts[0]).name)
-            'Company X 401k'
+                print(session.get_account(session.accounts[0]).name)
+                # 'Company X 401k'
               
         '''
         if name:
@@ -340,14 +348,23 @@ class Account(Session):
         # ?when none: 'This option will become available once there is a balance in your account.' on page
         self._view_investments()
 
+        # Get the name of the Advisors
+        tbl = self.driver.find_element_by_tag_name('tbody')
+        advisors =  [x.text for x in tbl.find_elements_by_tag_name('em')].extend([np.nan]) # Extend for total row
+
         # Let the page load
         time.sleep(5)
         tbl = pd.read_html(self.driver.page_source)[0]
 
         tbl.columns = ['AssetClass', 'Manager-Asset','Mix', 'Units', 'UnitValue', 'Total']
-        tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(x.replace('Performance Snapshot', '').split('Principal')[1:]))
+        #tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(x.replace('Performance Snapshot', '').split('Principal')[1:]))
+        tbl['Manager'] = advisors
+        tbl['AssetName'] = tbl.apply(lambda x: x['Manager-Asset'].replace(x['Manager'], '').replace('Performance Snapshot', '') if not pd.isna(x['Manager']) else x['Manager-Asset'], axis=1)
+        
         # Add the fund manager
-        tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(x.replace('Performance Snapshot', '').split('Principal')[0]))
+        #tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(x.replace('Performance Snapshot', '').split('Principal')[0]))
+        
+
 
         return tbl[['AssetClass', 'Manager', 'AssetName', 'Mix', 'Units', 'UnitValue', 'Total']]
 
