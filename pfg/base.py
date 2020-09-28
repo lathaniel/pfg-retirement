@@ -350,21 +350,15 @@ class Account(Session):
 
         # Get the name of the Advisors
         tbl = self.driver.find_element_by_tag_name('tbody')
-        advisors =  [x.text for x in tbl.find_elements_by_tag_name('em')].extend([np.nan]) # Extend for total row
+        advisors = self._getAdvisorNames(tbl)
 
         # Let the page load
         time.sleep(5)
         tbl = pd.read_html(self.driver.page_source)[0]
 
         tbl.columns = ['AssetClass', 'Manager-Asset','Mix', 'Units', 'UnitValue', 'Total']
-        #tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(x.replace('Performance Snapshot', '').split('Principal')[1:]))
         tbl['Manager'] = advisors
         tbl['AssetName'] = tbl.apply(lambda x: x['Manager-Asset'].replace(x['Manager'], '').replace('Performance Snapshot', '') if not pd.isna(x['Manager']) else x['Manager-Asset'], axis=1)
-        
-        # Add the fund manager
-        #tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(x.replace('Performance Snapshot', '').split('Principal')[0]))
-        
-
 
         return tbl[['AssetClass', 'Manager', 'AssetName', 'Mix', 'Units', 'UnitValue', 'Total']]
 
@@ -435,6 +429,15 @@ class Account(Session):
         btn = self.driver.find_element_by_name('Submit')
         btn.click()
 
+    def _getAdvisorNames(self, tbl, total_row = True):
+        # Take in a table and return an array with the advisor names
+
+        advisors =  [x.text for x in tbl.find_elements_by_tag_name('em')]
+        if total_row==True:
+            advisors.extend([np.nan]) # Extend for total row
+        
+        return advisors
+
     def _get_contributions(self):
         self.driver.get(self.nav_links['Contribution Totals By Source'])
         # Let the page load
@@ -453,6 +456,45 @@ class Account(Session):
         tbl.total_usd = tbl.total_usd.str.replace('$', '').str.replace(',','').astype(float)
 
         return tbl[['Source','vested_pct','vested_usd','total_usd','total_pct']]
+
+    def _return(self, date_from = None, date_to = None, range = 'YTD'):
+        '''Get the rate of return broken down by asset holdings
+
+        Args:
+            date_from (str or datetime-like obj): Start of range for which to calculate return. Default is start of year.
+            date_to (str or datetime-like obj): End of range for which to calculate return. Default is current date.
+            range (str): An alternative to providing *from* and *to* dates.
+
+                *"YTD" (default)*: See year-to-date return
+                *"YOY"*: See year-over-year return (1 year ago through)
+                *"MAX"*: See year-over-year return for max date range (two years)
+            
+        Returns:
+            Pandas dataframe
+
+        '''
+        self.driver.get(self.nav_links['Personalized Rate of Return'])
+        # Let the page load
+        time.sleep(4)
+
+        # Get the name of the Advisors
+        tbl = self.driver.find_element_by_tag_name('tbody')
+        advisors = self._getAdvisorNames(tbl)
+
+        tables = pd.read_html(self.driver.page_source)
+        
+        if len(tables):
+            tbl = tables[0].dropna(1)
+            tbl.columns = ['Manager-Asset', 'Balance', 'Return']
+            tbl['Manager'] = advisors
+            tbl['AssetName'] = tbl.apply(lambda x: x['Manager-Asset'].replace(x['Manager'], '').replace('Performance Snapshot', '') if not pd.isna(x['Manager']) else x['Manager-Asset'], axis=1)
+            return tbl[['Manager', 'AssetName', 'Balance', 'Return']]
+        else:
+            return []
+
+    @property
+    def roi(self):
+        return self._return()
 
     @property
     def allocations(self):

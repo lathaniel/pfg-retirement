@@ -22,5 +22,3 @@ setup(
     description="First pass of PFG api",
     url = "https://github.com/lathaniel/pfg-retirement"
 )
-
-# Dv05^^flNnz22**@N#MC$C&hFpx45iDh!rOkRN4
