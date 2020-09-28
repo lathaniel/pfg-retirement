@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pfg-retirement",
-    version="0.2.6",
+    version="0.2.7",
     packages=['pfg'],
 
     # Project uses reStructuredText, so ensure that the docutils get
@@ -17,7 +17,7 @@ setup(
     },
 
     # metadata to display on PyPI
-    author="Lathaniel",
+    author="Adam Lathan",
     author_email='',
     description="First pass of PFG api",
     url = "https://github.com/lathaniel/pfg-retirement"

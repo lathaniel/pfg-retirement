@@ -18,11 +18,11 @@ sys.path.insert(1, os.path.abspath('../env/Lib/site-packages')) # path to venv
 # -- Project information -----------------------------------------------------
 master_doc = 'index'
 project = 'pfg-retirement'
-copyright = '2020, ASL'
+copyright = '2020, Adam Lathan'
 author = 'ASL'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.6'
+release = '0.2.7'
 
 
 # -- General configuration ---------------------------------------------------
