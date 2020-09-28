@@ -170,6 +170,7 @@ class Session:
             index (int): integer for which index from *accounts* list to show
         
         Examples:
+            
             .. code-block:: python
 
                 session = pfg.Session(driver, usr, pwd)
