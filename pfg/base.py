@@ -30,7 +30,7 @@ class Session:
     Example:
         I prefer to use a headless chrome driver as my driver:
         
-        .. code-block::
+        .. code::
         
             chrome_options = webdriver.chrome.options.Options()
             chrome_options.add_argument('--headless')
@@ -38,7 +38,7 @@ class Session:
             driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
             driver.set_window_size(1440, 900) # Setting window size ensures elements are clickable
         
-        .. code-block::
+        .. code::
 
             session = Session(driver, 'username', 'pa$$w0rd')
 
