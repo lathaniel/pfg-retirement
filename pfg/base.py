@@ -30,7 +30,7 @@ class Session:
     Example:
         I prefer to use a headless chrome driver as my driver:
         
-        .. code::
+        .. code-block:: python
         
             chrome_options = webdriver.chrome.options.Options()
             chrome_options.add_argument('--headless')
@@ -38,7 +38,7 @@ class Session:
             driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
             driver.set_window_size(1440, 900) # Setting window size ensures elements are clickable
         
-        .. code::
+        .. code-block:: python
 
             session = Session(driver, 'username', 'pa$$w0rd')
 
@@ -170,7 +170,7 @@ class Session:
             index (int): integer for which index from *accounts* list to show
         
         Examples:
-            .. code-block::
+            .. code-block:: python
 
                 session = pfg.Session(driver, usr, pwd)
                 session.accounts
@@ -182,7 +182,7 @@ class Session:
 
             Or maybe:
             
-            .. code-block::
+            .. code-block:: python
 
                 print(session.get_account(session.accounts[0]).name)
                 # 'Company X 401k'

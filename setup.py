@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pfg-retirement",
-    version="0.2.4",
+    version="0.2.5",
     packages=['pfg'],
 
     # Project uses reStructuredText, so ensure that the docutils get

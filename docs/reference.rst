@@ -11,7 +11,7 @@ Classes
    :members:
 
 .. autoclass:: pfg.base.Account
-   
+   :member:
 
 Examples
 --------
