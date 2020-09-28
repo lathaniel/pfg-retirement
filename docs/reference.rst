@@ -11,9 +11,7 @@ Classes
    :members:
 
 .. autoclass:: pfg.base.Account
-   :members:
+   
 
 Examples
 --------
-
-TODO: Add some broad/general examples here?
