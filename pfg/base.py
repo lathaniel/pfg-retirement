@@ -176,10 +176,11 @@ class Session:
                 session = pfg.Session(driver, usr, pwd)
                 session.accounts
                 # ['Company X 401k', 'Former Company Y 401k', 'Company X Pension', 'Company X Dental']
+                
                 x = session.get_account(name='Company X 401k')
                 y = session.get_account(index = 0)
                 x == y
-                #True
+                # True
 
             Or maybe:
             
