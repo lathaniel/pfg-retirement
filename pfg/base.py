@@ -1,8 +1,10 @@
 '''
 Primary module used for this project.
-Used to scrape/obtain data from Principal's consumer. It does so using a selenium web driver.
+Used to scrape/obtain data from Principal's consumer.
+It does so using a selenium web driver.
 '''
 from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
 import time
 import datetime
 import json
@@ -15,7 +17,8 @@ class Session:
     '''Session class represents the login session
 
     Parameters:
-        driver (selenium.webdriver): Selenium driver instance used to interact with the webpage
+        driver (selenium.webdriver): Selenium driver instance\
+        used to interact with the webpage
         username (str): username to login
         password (str): password to login
 
@@ -29,9 +32,14 @@ class Session:
 
             chrome_options = webdriver.chrome.options.Options()
             chrome_options.add_argument('--headless')
-            chrome_options.add_argument("--log-level=3")  # only show fatal
-            driver = webdriver.Chrome(executable_path='chromedriver', options=chrome_options)
-            driver.set_window_size(1440, 900) # Setting window size ensures elements are clickable
+            # Only show fatal with log level 3
+            chrome_options.add_argument("--log-level=3")
+            driver = webdriver.Chrome(
+                executable_path='chromedriver',
+                options=chrome_options
+            )
+            # Setting window size ensures elements are clickable
+            driver.set_window_size(1440, 900)
 
         .. code-block:: python
 
@@ -52,8 +60,11 @@ class Session:
         a_tags = driver.find_elements_by_tag_name('a')
 
         # Filter to links containing 'contract' in the href
-        a_tags = list(filter(lambda x: False if not x.get_attribute(
-            'href') else 'contract' in x.get_attribute('href').lower(), a_tags))
+        a_tags = list(filter(
+            lambda x: False if not x.get_attribute(
+                'href') else 'contract' in x.get_attribute('href').lower(),
+            a_tags
+        ))
         # Do this to avoid stale element issue
         hrefs = [x.get_attribute('href') for x in a_tags]
         # Do this to avoid stale element issue
@@ -76,7 +87,7 @@ class Session:
                 argnames = ['category', 'type', 'name']
                 onclick = onclicks[i].split(
                     'gtmAccountDetails')[-1].strip('()').split(',')
-                # This should always be case...or at least it will once I set this up correctly
+                # This should always be case
                 if len(onclick) == 3:
                     # strip away the double quotes
                     argvals = list(map(lambda x: x.strip('"'), onclick))
@@ -148,7 +159,8 @@ class Session:
         login.click()
 
         # Make sure it worked
-        if 'username or password you entered was invalid' in self.driver.page_source:
+        if 'username or password you entered was invalid'\
+                in self.driver.page_source:
             print('Unable to login.')
             return None
 
@@ -168,7 +180,8 @@ class Session:
         '''Retrieves the specified account from self.accounts
 
         Args:
-            name (str): string matching one of the strings shown in *accounts* list
+            name (str): string matching one of
+                the strings shown in *accounts* list
             index (int): integer for which index from *accounts* list to show
 
         Examples:
@@ -177,7 +190,7 @@ class Session:
 
                 session = pfg.Session(driver, usr, pwd)
                 session.accounts
-                # ['Company X 401k', 'Former Company Y 401k', 'Company X Pension', 'Company X Dental']
+                # ['Company X 401k', ..., 'Company X Dental']
 
                 x = session.get_account(name='Company X 401k')
                 y = session.get_account(index = 0)
@@ -194,14 +207,20 @@ class Session:
         '''
         if name:
             if isinstance(name, str):
-                '''Case 1: a string was proided. This should represent one of the account names'''
-                return list(filter(lambda x: name in x.name, self.__accounts))[0]
+                '''Case 1: a string was proided. This should
+                represent one of the account names
+                '''
+                return list(filter(
+                    lambda x: name in x.name, self.__accounts
+                ))[0]
             else:
                 print('name should be a string.')
                 return None
         elif index is not None:
             if isinstance(index, int):
-                '''Case 2: an integer was provided. This should represent an index'''
+                '''Case 2: an integer was provided.
+                This should represent an index
+                '''
                 return self.__accounts[index]
             else:
                 print('index should be an integer representing an index')
@@ -213,20 +232,25 @@ class Session:
 
 
 class Account(Session):
-    ''':class: Account represents an account identified by the :class: `Session`
+    '''Account class represents an account
+    identified by the `Session` class
 
     Attributes:
         name (str): Name of the account
-        type (str): Type of account, e.g. "Defined Contribution Retirement Plan"
-        category (str): Broad category of account, e.g. "Retirement & Investments"
+        type (str): Type of account,
+            e.g. "Defined Contribution Retirement Plan"
+        category (str): Broad category of account,
+            e.g. "Retirement & Investments"
         ror: Rate of Return
         balance: Total balance of the account
         vestedBalance: Vested portion of balance
         gain: Amount of gain or loss on the account
         loss: alias for *gain*
         asof: Date when data was updated
-        allocations: Summary of paycheck contribution settings as *Pandas DataFrame*
-        contributions: Summary of employee vs employer contributions (along with vesting information) as *Pandas DataFrame*
+        allocations: Summary of paycheck contribution settings
+            as *Pandas DataFrame*
+        contributions: Summary of employee vs employer contributions
+            (along with vesting information) as *Pandas DataFrame*
     '''
 
     def __init__(self, **kwargs):
@@ -236,19 +260,25 @@ class Account(Session):
             type
             name
             nav_url
-            driver ... I think the account should really have the driver, but I cannot seem to wrap my head around that yet.
-                    Furthermore, I think each account having its own driver will cause HTMLAsynch issues.
+            driver ... I think the account should really have the driver,
+                but I cannot seem to wrap my head around that yet.
+                Furthermore, I think each account having its own
+                driver will cause HTMLAsynch issues.
         '''
         self.__dict__.update(
             kwargs)  # Update the attributes with provided params
         # just for shits, lets see what happens if we run summary() on init
-        # ? Update: It takes about two minutes, which is kind of extra, so lets leave it out for now
+        # ? Update: It takes about two minutes, which is kind of extra,
+        # ? so lets leave it out for now
         # self.summary()
 
     def summary(self):
         '''
-        use nav_url to get some info on the account (e.g. balance, vested balance, etc.)
-        Matta fact, maybe this should be done on __init__, since doing so could also yield hrefs to history, etc.
+        Use nav_url to get some info on the account
+        (e.g. balance, vested balance, etc.).
+
+        Matta fact, maybe this should be done on __init__,
+        since doing so could also yield hrefs to history, etc.
         '''
         self.driver.implicitly_wait(10)
         self.driver.get(self.nav_url)
@@ -258,7 +288,8 @@ class Account(Session):
             time.sleep(5)
             self.driver.implicitly_wait(0)
             navs = self.driver.find_elements_by_tag_name('nav')
-            # Assumption is that nav bar is second (first would be top with logout etc)
+            # Assumption is that nav bar is second
+            # (first would be top with logout etc)
             nav_bar = nav_bar = navs[1].find_element_by_tag_name(
                 'ul') if len(navs) else None
 
@@ -288,7 +319,7 @@ class Account(Session):
             ########
             # Get account summary info, if available
             m = re.search(
-                'controllerData = (\\{.*\\})\;?', self.driver.page_source)
+                r'controllerData = (\\{.*\\})\;?', self.driver.page_source)
             if m:
                 d = json.loads(m[1])
                 # For now just add everything, I guess
@@ -298,15 +329,19 @@ class Account(Session):
 
     def history(self, detail='summary', start=None, end=None):
         # TODO: Include param for level of detail (summary, _, full)
-        # ? when none: 'There are no transaction details available for this date range.' on page
+        # ? when none: 'There are no transaction details
+        # ? available for this date range.' on page
         '''Retrieves history for the given dates for the account object
 
         Args:
-            detail (str): Level of detail to provide. Goal is to provide three levels of detail
+            detail (str): Level of detail to provide.
+                Goal is to provide three levels of detail
             start (str): Date string formatted MM/DD/YY.
-                This is the beginning of the requested date range. Must be at most 92 days before *end*
+                This is the beginning of the requested date range.
+                Must be at most 92 days before *end*
             end (str): Date string formatted MM/DD/YY.
-                This is the end of the requested date range. Must be at most 92 days after *start*
+                This is the end of the requested date range.
+                Must be at most 92 days after *start*
 
         Returns:
             Pandas Dataframe
@@ -316,7 +351,10 @@ class Account(Session):
         if detail.lower() == 'summary':
             # Get the balanceHistory data
             transactions = pd.DataFrame(np.array(
-                [[x['effectiveDate'][0:10], x['total']] for x in self.balanceHistory]), columns=['Date', 'Total'])
+                [[x['effectiveDate'][0:10], x['total']]
+                 for x in self.balanceHistory]),
+                columns=['Date', 'Total']
+            )
 
         elif detail.lower() == 'full':
             # Get the most amount of detail possible
@@ -325,14 +363,19 @@ class Account(Session):
             # Verify that end - start is <= 91 days
             # Veryify start and end are dates
 
-            # ? 'https://secure05.principal.com/RetirementServiceCenter/memberview?Contract=%283%2966776&Allow365=&From=06%2F13%2F2020&From2=09%2F01%2F2020&To=09%2F13%2F2020&To2=09%2F13%2F2020&Inv=By&Cont=By&page_name=reqbyby'
-            # TODO: Build request URL using above as a template in following call
+            # ? 'https://secure05.principal.com/RetirementServiceCenter/
+            # ?  memberview?Contract=%283%2966776&Allow365=
+            # ?  &From=06%2F13%2F2020&From2=09%2F01%2F2020&To=09%2F13%2F2020
+            # ?  &To2=09%2F13%2F2020&Inv=By&Cont=By&page_name=reqbyby'
+            # TODO: Build request URL using above
+            # TODO: as a template in following call
             self._request_history()
             # Let the page load
             time.sleep(4)
 
-            # At this point, we've made it to the transactions - and it should be loaded already
-            tables = pd.read_html(self.driver.page_source)[1:-1]
+            # At this point, we've made it to the transactions
+            # and it should be loaded already
+            tables = pd.read_html(self.driver.page_source)[1:]
             for i, t in enumerate(tables):
                 # Each table is a multiindex along column axis
                 inv = t.columns[0][0]
@@ -350,31 +393,40 @@ class Account(Session):
     def _get_investments(self):
         '''Gets summary of current investments
 
-        Data returned: fund manager, fund name, number of shares, share price, percent of portfolio, and total value
-
+        Data returned: fund manager, fund name, number of shares, share price,
+        percent of portfolio, and total value
 
         Returns:
             Pandas Dataframe
 
         '''
-        # ?when none: 'This option will become available once there is a balance in your account.' on page
+        # ? when none: 'This option will become available once there
+        # ? is a balance in your account.' on page
         self._view_investments()
-
-        # Get the name of the Advisors
-        tbl = self.driver.find_element_by_tag_name('tbody')
-        advisors = self._getAdvisorNames(tbl)
 
         # Let the page load
         time.sleep(5)
-        tbl = pd.read_html(self.driver.page_source)[0]
+        page_text = self.driver.page_source
 
-        tbl.columns = ['AssetClass', 'Manager-Asset',
+        # Most of the table info can be grabbed by read_html
+        tbl = pd.read_html(page_text)[0]
+        tbl.columns = ['AssetClass', "Ignore", 'Manager',
                        'Mix', 'Units', 'UnitValue', 'Total']
-        tbl['Manager'] = advisors
-        tbl['AssetName'] = tbl.apply(lambda x: x['Manager-Asset'].replace(x['Manager'], '').replace(
-            'Performance Snapshot', '') if not pd.isna(x['Manager']) else x['Manager-Asset'], axis=1)
 
-        return tbl[['AssetClass', 'Manager', 'AssetName', 'Mix', 'Units', 'UnitValue', 'Total']]
+        # Drop NA column
+        tbl = tbl.drop(columns={"Ignore"}).dropna()
+
+        # Asset Names need to be grabbed separately
+        soup = BeautifulSoup(page_text, parser='lxml')
+        page_table = soup.find('tbody')
+
+        # Each table row has an asset to be grabbed
+        rows = page_table.find_all('tr')
+        asset_names = [row.find('a').text for row in rows]
+
+        tbl['AssetName'] = asset_names
+
+        return tbl
 
     def _view_investments(self):
         self.driver.get(self.nav_links['Investment Details'])
@@ -401,11 +453,17 @@ class Account(Session):
         tbl = tbl.drop(columns=['empty'])
         tbl = tbl.drop(len(tbl) - 1)  # Last row is a total row
         tbl['Allocation'] = tbl.Allocation.apply(
-            lambda x: float(re.search('(\d+\.\d{2})%', x)[1])/100)
+            lambda x: float(re.search(r'(\d+\.\d{2})%', x)[1])/100)
 
         # Get the asset and manager names from provided column
-        tbl['AssetName'] = tbl['Manager-Asset'].apply(lambda x: 'Principal' + ''.join(
-            x.replace('Performance Snapshot', '').split('Principal')[1:]))
+        tbl['AssetName'] = tbl['Manager-Asset'].apply(
+            lambda x:
+                'Principal' + ''.join(
+                    x.replace('Performance Snapshot', '')
+                    .split('Principal')[1:]
+                )
+        )
+
         # Add the fund manager
         tbl['Manager'] = tbl['Manager-Asset'].apply(lambda x: ''.join(
             x.replace('Performance Snapshot', '').split('Principal')[0]))
@@ -419,8 +477,6 @@ class Account(Session):
         if detail == 'full':
             # View in full detail
             self.driver.find_element_by_id('submit-view-more-history').click()
-
-        # self.driver.get('https://secure05.principal.com/RetirementServiceCenter/memberview?page_name=reqonline')
 
         # Select dates (MM/DD/YYYY)
         # By default: Let's choose the current date and 92 days prior
@@ -439,7 +495,9 @@ class Account(Session):
 
         if detail == 'full':
             # Select detailed view (two radio buttons)
-            for x in self.driver.find_elements(By.XPATH, '//label[contains(text(),"Detail by each")]'):
+            for x in self.driver.find_elements(
+                    By.XPATH,
+                    '//label[contains(text(),"Detail by each")]'):
                 x.click()
 
         # Submit
@@ -450,7 +508,7 @@ class Account(Session):
         # Take in a table and return an array with the advisor names
 
         advisors = [x.text for x in tbl.find_elements_by_tag_name('em')]
-        if total_row == True:
+        if total_row is True:
             advisors.extend([np.nan])  # Extend for total row
 
         return advisors
@@ -460,8 +518,9 @@ class Account(Session):
         # Let the page load
         time.sleep(4)
 
-        # This is the most generalized table, so we'll take that. May want to provide flexibility later on, though.
-        tbl = pd.read_html(driver.page_source)[1].dropna()
+        # This is the most generalized table, so we'll take that.
+        # May want to provide flexibility later on, though.
+        tbl = pd.read_html(self.driver.page_source)[1].dropna()
         tbl.columns = ['src', 'vested_pct',
                        'vested_usd', 'total_usd', 'total_pct']
 
@@ -476,19 +535,28 @@ class Account(Session):
         tbl.total_usd = tbl.total_usd.str.replace(
             '$', '').str.replace(',', '').astype(float)
 
-        return tbl[['Source', 'vested_pct', 'vested_usd', 'total_usd', 'total_pct']]
+        return tbl[[
+            'Source',
+            'vested_pct',
+            'vested_usd',
+            'total_usd',
+            'total_pct'
+        ]]
 
     def _return(self, date_from=None, date_to=None, range='YTD'):
         '''Get the rate of return broken down by asset holdings
 
         Args:
-            date_from (str or datetime-like obj): Start of range for which to calculate return. Default is start of year.
-            date_to (str or datetime-like obj): End of range for which to calculate return. Default is current date.
+            date_from (str or datetime-like obj): Start of range for which to
+                calculate return. Default is start of year.
+            date_to (str or datetime-like obj): End of range for which to
+                calculate return. Default is current date.
             range (str): An alternative to providing *from* and *to* dates.
 
                 *"YTD" (default)*: See year-to-date return
                 *"YOY"*: See year-over-year return (1 year ago through)
-                *"MAX"*: See year-over-year return for max date range (two years)
+                *"MAX"*: See year-over-year return
+                for max date range (two years)
 
         Returns:
             Pandas dataframe
@@ -508,8 +576,13 @@ class Account(Session):
             tbl = tables[0].dropna(1)
             tbl.columns = ['Manager-Asset', 'Balance', 'Return']
             tbl['Manager'] = advisors
-            tbl['AssetName'] = tbl.apply(lambda x: x['Manager-Asset'].replace(x['Manager'], '').replace(
-                'Performance Snapshot', '') if not pd.isna(x['Manager']) else x['Manager-Asset'], axis=1)
+            tbl['AssetName'] = tbl.apply(
+                lambda x:
+                    x['Manager-Asset']
+                    .replace(x['Manager'], '')
+                    .replace('Performance Snapshot', '')
+                    if not pd.isna(x['Manager']) else x['Manager-Asset'],
+                axis=1)
             return tbl[['Manager', 'AssetName', 'Balance', 'Return']]
         else:
             return []
