@@ -97,7 +97,7 @@ class Session:
     def __verify_2FA(self):
         self.driver.implicitly_wait(10)  # seconds
         # Each field is its own box
-        otp = input('What is the code that was texted to you? ')
+        otp = input('MFA CODE: ')
         otp_xs = self.driver.find_element_by_id('otpXS')
         if not otp_xs.is_displayed():
             # Enter the passcode one char at a time
@@ -429,10 +429,14 @@ class Account(Session):
         return tbl
 
     def _view_investments(self):
-        self.driver.get(self.nav_links['Investment Details'])
+        self.driver.get(self.nav_links[
+            list(filter(lambda x: x.lower() == 'investment details'))
+        ])
 
     def _view_transactions(self):
-        self.driver.get(self.nav_links['Account History'])
+        self.driver.get(self.nav_links[
+            list(filter(lambda x: x.lower() == 'account history'))
+        ])
 
     def _get_allocations(self):
         '''Get the current paycheck contribution percentages
@@ -443,7 +447,11 @@ class Account(Session):
         TODO:
             Be able to strip assetName and managerName from provided data
         '''
-        self.driver.get(self.nav_links['Paycheck Contribution Details'])
+        self.driver.get(self.nav_links[
+            list(filter(
+                lambda x: x.lower() == 'paycheck contribution details'
+            ))
+        ])
         time.sleep(4)  # let the page load
 
         tbl = pd.read_html(self.driver.page_source)[0].droplevel(0, axis=1)
@@ -514,7 +522,11 @@ class Account(Session):
         return advisors
 
     def _get_contributions(self):
-        self.driver.get(self.nav_links['Contribution Totals By Source'])
+        self.driver.get(self.nav_links[
+            list(filter(
+                lambda x: x.lower() == 'contribution totals by source'
+            ))
+        ])
         # Let the page load
         time.sleep(4)
 
@@ -562,7 +574,11 @@ class Account(Session):
             Pandas dataframe
 
         '''
-        self.driver.get(self.nav_links['Personalized Rate of Return'])
+        self.driver.get(self.nav_links[
+            list(filter(
+                lambda x: x.lower() == 'personalized rate of return'
+            ))
+        ])
         # Let the page load
         time.sleep(4)
 
