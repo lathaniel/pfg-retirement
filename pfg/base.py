@@ -386,7 +386,7 @@ class Account(Session):
                 t = t.loc[~(t['Contribution Type'] == 'Total')]
                 if not i:
                     transactions = pd.DataFrame(columns=t.columns)
-                transactions = transactions.append(t, ignore_index=True)
+                transactions = pd.concat([transactions,t], ignore_index=True)
 
         return transactions
 
@@ -417,7 +417,7 @@ class Account(Session):
         tbl = tbl.drop(columns={"Ignore"}).dropna()
 
         # Asset Names need to be grabbed separately
-        soup = BeautifulSoup(page_text, parser='lxml')
+        soup = BeautifulSoup(page_text, features='lxml')
         page_table = soup.find('tbody')
 
         # Each table row has an asset to be grabbed
@@ -433,7 +433,7 @@ class Account(Session):
             list(filter(
                 lambda x: x.lower() == 'investment details',
                 self.nav_links.keys()
-            ))
+            ))[0]
         ])
 
     def _view_transactions(self):
@@ -441,7 +441,7 @@ class Account(Session):
             list(filter(
                 lambda x: x.lower() == 'account history',
                 self.nav_links.keys()
-            ))
+            ))[0]
         ])
 
     def _get_allocations(self):
@@ -457,7 +457,7 @@ class Account(Session):
             list(filter(
                 lambda x: x.lower() == 'paycheck contribution details',
                 self.nav_links.keys()
-            ))
+            ))[0]
         ])
         time.sleep(4)  # let the page load
 
@@ -533,7 +533,7 @@ class Account(Session):
             list(filter(
                 lambda x: x.lower() == 'contribution totals by source',
                 self.nav_links.keys()
-            ))
+            ))[0]
         ])
         # Let the page load
         time.sleep(4)
@@ -586,7 +586,7 @@ class Account(Session):
             list(filter(
                 lambda x: x.lower() == 'personalized rate of return',
                 self.nav_links.keys()
-            ))
+            ))[0]
         ])
         # Let the page load
         time.sleep(4)
