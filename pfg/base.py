@@ -386,7 +386,7 @@ class Account(Session):
                 t = t.loc[~(t['Contribution Type'] == 'Total')]
                 if not i:
                     transactions = pd.DataFrame(columns=t.columns)
-                transactions = pd.concat([transactions,t], ignore_index=True)
+                transactions = pd.concat([transactions, t], ignore_index=True)
 
         return transactions
 
