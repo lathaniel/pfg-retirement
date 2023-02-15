@@ -430,12 +430,18 @@ class Account(Session):
 
     def _view_investments(self):
         self.driver.get(self.nav_links[
-            list(filter(lambda x: x.lower() == 'investment details'))
+            list(filter(
+                lambda x: x.lower() == 'investment details',
+                self.nav_links.keys()
+            ))
         ])
 
     def _view_transactions(self):
         self.driver.get(self.nav_links[
-            list(filter(lambda x: x.lower() == 'account history'))
+            list(filter(
+                lambda x: x.lower() == 'account history',
+                self.nav_links.keys()
+            ))
         ])
 
     def _get_allocations(self):
@@ -449,7 +455,8 @@ class Account(Session):
         '''
         self.driver.get(self.nav_links[
             list(filter(
-                lambda x: x.lower() == 'paycheck contribution details'
+                lambda x: x.lower() == 'paycheck contribution details',
+                self.nav_links.keys()
             ))
         ])
         time.sleep(4)  # let the page load
@@ -524,7 +531,8 @@ class Account(Session):
     def _get_contributions(self):
         self.driver.get(self.nav_links[
             list(filter(
-                lambda x: x.lower() == 'contribution totals by source'
+                lambda x: x.lower() == 'contribution totals by source',
+                self.nav_links.keys()
             ))
         ])
         # Let the page load
@@ -576,7 +584,8 @@ class Account(Session):
         '''
         self.driver.get(self.nav_links[
             list(filter(
-                lambda x: x.lower() == 'personalized rate of return'
+                lambda x: x.lower() == 'personalized rate of return',
+                self.nav_links.keys()
             ))
         ])
         # Let the page load
